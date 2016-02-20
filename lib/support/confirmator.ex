@@ -44,8 +44,8 @@ defmodule PhoenixTokenAuth.Confirmator do
   def confirmation_changeset(user = %{unconfirmed_account: unconfirmed_account}, params) when unconfirmed_account != nil do
     Changeset.cast(user, params, [], [])
     |> Changeset.put_change(:hashed_confirmation_token, nil)
-    |> Changeset.put_change(:unconfirmed_email, nil)
-    |> Changeset.put_change(:email, unconfirmed_account)
+    |> Changeset.put_change(:unconfirmed_account, nil)
+    |> Changeset.put_change(:account, unconfirmed_account)
     |> validate_token
   end
   def confirmation_changeset(%{confirmed_at: _}, _params) do
