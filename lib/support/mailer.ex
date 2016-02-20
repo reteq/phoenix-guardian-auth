@@ -32,12 +32,12 @@ defmodule PhoenixTokenAuth.Mailer do
     body = email_mod.welcome_body(user, confirmation_token, conn)
     from = Application.get_env(@config_atom, :email_sender)
 
-    {:ok, _} = send_email(to: user.email,
+    {:ok, _} = send_email(to: user.account,
                from: from,
                subject: subject,
                text: body)
 
-    Logger.info "Sent welcome email to #{user.email}"
+    Logger.info "Sent welcome email to #{user.account}"
   end
 
   @doc """
