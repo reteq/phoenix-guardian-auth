@@ -10,7 +10,7 @@ defmodule PhoenixTokenAuth.AccountUpdater do
     Changeset.cast(user, params, ~w(), [])
     |> UserHelper.validator
     |> apply_password_change
-    |> apply_email_change
+    |> apply_account_change
   end
 
   def apply_email_change(changeset = %{params: %{"email" => email}, model: %{email: email_before}})
