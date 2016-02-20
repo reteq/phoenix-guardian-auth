@@ -1,0 +1,2 @@
+defmodule PhoenixGuardianAuth do
+end
