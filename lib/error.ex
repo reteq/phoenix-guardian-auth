@@ -25,14 +25,8 @@ defimpl PhoenixGuardianAuth.ErrorConvertible, for: Ecto.Changeset do
 end
 
 defimpl PhoenixGuardianAuth.ErrorConvertible, for: Ecto.NoResultsError do
-  def to_error(%Ecto.NoResultsError{message: message}) do
+  def to_error(%Ecto.NoResultsError{message: _message}) do
     %PhoenixGuardianAuth.Error{message: "NoResultsError", errors: []}
-  end
-end
-
-defimpl PhoenixGuardianAuth.ErrorConvertible, for: PhoenixGuardianAuth.NotApplicableException do
-  def to_error(%PhoenixGuardianAuth.NotApplicableException{message: message}) do
-    %PhoenixGuardianAuth.Error{message: message, errors: []}
   end
 end
 
