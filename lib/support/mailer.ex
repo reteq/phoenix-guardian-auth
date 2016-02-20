@@ -52,12 +52,12 @@ defmodule PhoenixTokenAuth.Mailer do
     body = email_mod.password_reset_body(user, reset_token, conn)
     from = Application.get_env(@config_atom, :email_sender)
 
-    {:ok, _} = send_email(to: user.email,
+    {:ok, _} = send_email(to: user.account,
                from: from,
                subject: subject,
                text: body)
 
-    Logger.info "Sent password_reset email to #{user.email}"
+    Logger.info "Sent password_reset email to #{user.account}"
   end
 
   @doc """
@@ -72,12 +72,12 @@ defmodule PhoenixTokenAuth.Mailer do
     body = email_mod.new_email_address_body(user, confirmation_token, conn)
     from = Application.get_env(@config_atom, :email_sender)
 
-    {:ok, _} = send_email(to: user.unconfirmed_email,
+    {:ok, _} = send_email(to: user.unconfirmed_account,
                from: from,
                subject: subject,
                text: body)
 
-    Logger.info "Sent new email address email to #{user.unconfirmed_email}"
+    Logger.info "Sent new email address email to #{user.unconfirmed_account}"
   end
 
   defp email_mod do
