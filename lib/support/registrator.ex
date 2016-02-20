@@ -24,11 +24,19 @@ defmodule PhoenixTokenAuth.Registrator do
     |> changeset_helper
   end
 
-  def changeset(params) do
+  def changeset(params = %{"email" => email}) when email != "" and email != nil do
     UserHelper.model.changeset(struct(UserHelper.model), params)
     |> Changeset.cast(params, ~w(email), [])
     |> Changeset.validate_change(:email, &Util.presence_validator/2)
     |> Changeset.unique_constraint(:email)
+    |> changeset_helper
+  end
+
+  def changeset(params) do
+    UserHelper.model.changeset(struct(UserHelper.model), params)
+    |> Changeset.cast(params, ~w(account), [])
+    |> Changeset.validate_change(:account, &Util.presence_validator/2)
+    |> Changeset.unique_constraint(:account)
     |> changeset_helper
   end
 
