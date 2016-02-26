@@ -2,6 +2,8 @@ defmodule PhoenixTokenAuth.Confirmator do
   alias Ecto.Changeset
   alias PhoenixTokenAuth.Util
 
+  @activator Application.get_env(:phoenix_guardian_auth, :activator, PhoenixTokenAuth.Mailer)
+
   @doc """
   Adds the changes needed for a user's email confirmation to the given changeset.
 
@@ -19,7 +21,7 @@ defmodule PhoenixTokenAuth.Confirmator do
   # Generates a random token.
   # Returns {token, hashed_token}.
   defp generate_token do
-    token = SecureRandom.urlsafe_base64(64)
+    token = @activator.generate_token
     {token, Util.crypto_provider.hashpwsalt(token)}
   end
 

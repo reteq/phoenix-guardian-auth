@@ -12,6 +12,9 @@ defmodule PhoenixTokenAuth.Mailer do
         mailgun_key: "secret"
         emailing_module: PhoenixTokenAuth.TestMailing
   """
+  def generate_token do
+    SecureRandom.urlsafe_base64(64)
+  end
 
   @config_atom :phoenix_guardian_auth
 
