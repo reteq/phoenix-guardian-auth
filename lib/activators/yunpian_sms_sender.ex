@@ -1,7 +1,7 @@
 defmodule PhoenixGuardianAuth.YunpianSMSender do
   @behaviour PhoenixGuardianAuth.Activatable
 
-  @yunpian Application.get_env(:phoenix_guardian_auth, :yunian_template)
+  @yunpian Application.get_env(:phoenix_guardian_auth, :yunpian_template)
   
   def send_welcome(user, confirmation_token, conn \\ nil) do
     {body, id} = @yunpian.welcome_body(user, confirmation_token, conn) 
