@@ -19,7 +19,7 @@ defmodule PhoenixGuardianAuth.YunpianSMSender do
 
   def generate_token, do: random_number(1000..9999)
 
-  defp random_number(range) when is_range range do
+  defp random_number(range) do
     :crypto.rand_uniform(Range.first(range), Range.last(range))
   end
 end
