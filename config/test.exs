@@ -47,9 +47,10 @@ config :phoenix_guardian_auth,
   user_model: PhoenixGuardianAuth.User,
   repo: PhoenixGuardianAuth.Repo,
   raise_system_error: true,
+  activator: PhoenixTokenAuth.Mailer,
   email_sender: "myapp@example.com",
   emailing_module: PhoenixGuardianAuth.TestMailing
-  
+
 # Configure phoenix generators
 config :phoenix, :generators,
   migration: true,

@@ -7,6 +7,8 @@ defmodule PhoenixGuardianAuth.UserController do
   alias PhoenixTokenAuth.{Mailer, Util, UserHelper, AccountUpdater, Registrator, Confirmator, Authenticator, PasswordResetter}
   alias GuardianDb.Token
 
+  @activator Application.get_env(:phoenix_guardian_auth, :activator, Mailer)
+
   defp login_and_render(conn, user) do
     token = Guardian.Plug.current_token(Guardian.Plug.api_sign_in(conn, user))
     render_one conn, PhoenixGuardianAuth.TokenView, model: %{token: token, user: user}
@@ -33,7 +35,7 @@ defmodule PhoenixGuardianAuth.UserController do
 
     case Util.repo.transaction fn ->
       user = Util.repo.insert!(changeset)
-      Mailer.send_welcome_email(user, confirmation_token, conn)
+      @activator.send_welcome(user, confirmation_token, conn)
     end do
       {:ok, _} ->
         render_message(conn, "user created, please confirm your email.")
@@ -113,7 +115,7 @@ defmodule PhoenixGuardianAuth.UserController do
 
     case Util.repo.transaction fn ->
       user = Util.repo.update!(changeset)
-      Mailer.send_password_reset_email(user, password_reset_token, conn)
+      @activator.send_password_reset(user, password_reset_token, conn)
     end do
       {:ok, _} ->
         render_message(conn, "please check your email")
@@ -126,7 +128,7 @@ defmodule PhoenixGuardianAuth.UserController do
 
     case Util.repo.transaction fn ->
       user = Util.repo.update!(changeset)
-      Mailer.send_password_reset_email(user, password_reset_token, conn)
+      @activator.send_password_reset(user, password_reset_token, conn)
     end do
       {:ok, _} ->
         render_message(conn, "please check your email")
@@ -171,7 +173,7 @@ defmodule PhoenixGuardianAuth.UserController do
     case Util.repo.transaction fn ->
       user = Util.repo.update!(changeset)
       if (confirmation_token != nil) do
-        Mailer.send_new_email_address_email(user, confirmation_token, conn)
+        @activator.send_new_account(user, confirmation_token, conn)
       end
     end do
       {:ok, _} -> render_message(conn, "user has been updated")

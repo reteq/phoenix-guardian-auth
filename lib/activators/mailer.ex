@@ -1,4 +1,5 @@
 defmodule PhoenixTokenAuth.Mailer do
+  @behaviour PhoenixGuardianAuth.Activatable
   require Logger
 
   @moduledoc """
@@ -27,7 +28,7 @@ defmodule PhoenixTokenAuth.Mailer do
   Both config fields have to be functions returning binaries. welcome_email_subject receives the user and
   welcome_email_body the user and confirmation token.
   """
-  def send_welcome_email(user, confirmation_token, conn \\ nil) do
+  def send_welcome(user, confirmation_token, conn \\ nil) do
     subject = email_mod.welcome_subject(user, conn)
     body = email_mod.welcome_body(user, confirmation_token, conn)
     from = Application.get_env(@config_atom, :email_sender)
@@ -47,7 +48,7 @@ defmodule PhoenixTokenAuth.Mailer do
   Both config fields have to be functions returning binaries. password_reset_email_subject receives the user and
   password_reset_email_body the user and reset token.
   """
-  def send_password_reset_email(user, reset_token, conn \\ nil) do
+  def send_password_reset(user, reset_token, conn \\ nil) do
     subject = email_mod.password_reset_subject(user, conn)
     body = email_mod.password_reset_body(user, reset_token, conn)
     from = Application.get_env(@config_atom, :email_sender)
@@ -67,7 +68,7 @@ defmodule PhoenixTokenAuth.Mailer do
   Both config fields have to be functions returning binaries. new_email_address_email_subject receives the user and
   new_email_address_email_body the user and confirmation token.
   """
-  def send_new_email_address_email(user, confirmation_token, conn \\ nil) do
+  def send_new_account(user, confirmation_token, conn \\ nil) do
     subject = email_mod.new_email_address_subject(user, conn)
     body = email_mod.new_email_address_body(user, confirmation_token, conn)
     from = Application.get_env(@config_atom, :email_sender)

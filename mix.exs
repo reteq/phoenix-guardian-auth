@@ -22,8 +22,8 @@ defmodule PhoenixGuardianAuth.Mixfile do
   defp applications(_all),  do: [:logger, :phoenix, :cowboy, :gettext,
                                  :phoenix_ecto, :postgrex, :comeonin]
 
-  defp mod(:test), do: PhoenixGuardianAuthTest
-  defp mod(_other), do: PhoenixGuardianAuth
+  # defp mod(:test), do: PhoenixGuardianAuthTest
+  # defp mod(_other), do: PhoenixGuardianAuth
 
   # Dependencies can be Hex packages:
   #

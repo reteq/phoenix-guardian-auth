@@ -36,6 +36,4 @@ defmodule PhoenixTokenAuth.MailingBehaviour do
 	the User struct, reset token and connection struct.
 	"""
 	defcallback new_email_address_body(any, String.t, Map.t) :: String.t
-
-
 end
