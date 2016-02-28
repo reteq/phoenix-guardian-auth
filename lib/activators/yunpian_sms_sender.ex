@@ -14,7 +14,7 @@ defmodule PhoenixGuardianAuth.YunpianSMSender do
   end
 
   def send_new_account(user, confirmation_token, conn \\ nil) do
-    {body, id} = @yunpian.new_account_body(user, confirmation_token, conn) 
+    {body, id} = @yunpian.new_phone_number_body(user, confirmation_token, conn) 
     Sms.send(user.account, body, [tpl_id: id])
   end
 
