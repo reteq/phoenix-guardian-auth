@@ -15,7 +15,7 @@ defmodule PhoenixGuardianAuth.YunpianSMSender do
 
   def send_new_account(user, confirmation_token, conn \\ nil) do
     {body, id} = @yunpian.new_phone_number_body(user, confirmation_token, conn) 
-    Sms.send(user.account, body, [tpl_id: id])
+    Sms.send(user.unconfirmed_account, body, [tpl_id: id])
   end
 
   def generate_token, do: :crypto.rand_uniform(1000, 9999) |> Integer.to_string
