@@ -4,15 +4,11 @@ defmodule PhoenixGuardianAuth.UserController do
   require Ecto.Query
   import PhoenixGuardianAuth.Controller
 
-  alias PhoenixTokenAuth.{Mailer, Util, UserHelper, AccountUpdater, Registrator, Confirmator, Authenticator, PasswordResetter}
+  alias PhoenixTokenAuth.{Mailer, Util, UserHelper, AccountUpdater, Registrator, Confirmator, Authenticator, PasswordResetter, DefaultUserBehaviour}
   alias GuardianDb.Token
 
   @activator Application.get_env(:phoenix_guardian_auth, :activator, Mailer)
-
-  defp login_and_render(conn, user) do
-    token = Guardian.Plug.current_token(Guardian.Plug.api_sign_in(conn, user))
-    render_one conn, PhoenixGuardianAuth.TokenView, model: %{token: token, user: user}
-  end
+  @user_behaviour Application.get_env(:phoenix_guardian_auth, :user_behaviour, DefaultUserBehaviour)
 
   def unauthenticated(_conn, _params) do
     raise Necta.AuthException, message: "Not Authenticated"
@@ -33,12 +29,10 @@ defmodule PhoenixGuardianAuth.UserController do
     {confirmation_token, changeset} = Registrator.changeset(params)
     |> Confirmator.confirmation_needed_changeset
 
-    case Util.repo.transaction fn ->
+    Util.repo.transaction fn ->
       user = Util.repo.insert!(changeset)
       @activator.send_welcome(user, confirmation_token, conn)
-    end do
-      {:ok, _} ->
-        render_message(conn, "user created, please confirm your email.")
+      @user_behaviour.created(user)
     end
   end
 
@@ -57,8 +51,10 @@ defmodule PhoenixGuardianAuth.UserController do
     user = Util.repo.get! UserHelper.model, user_id
     changeset = Confirmator.confirmation_changeset user, params
 
-    Util.repo.update!(changeset)
-    login_and_render(conn, user)
+    Util.repo.transaction fn ->
+      user = Util.repo.update!(changeset)
+      @user_behaviour.confirmed(user)
+    end
   end
 
   def confirm_with_get(conn, params = %{"id" => _user_id, "confirmation_token" => _}) do
@@ -74,13 +70,17 @@ defmodule PhoenixGuardianAuth.UserController do
   Responds with status 401 and {errors: error_message} otherwise.
   """
   def login(conn, %{"data" => %{"attributes" => %{"email" => email, "password" => password}}}) do
-    {:ok, user} = Authenticator.authenticate_by_email(email, password)
-    login_and_render(conn, user)
+    Util.repo.transaction fn ->
+      {:ok, user} = Authenticator.authenticate_by_email(email, password)
+      @user_behaviour.signed_in(user)
+    end
   end
 
   def login(conn, %{"data" => %{"attributes" => %{"account" => account, "password" => password}}}) do
-    {:ok, user} = Authenticator.authenticate_by_account(account, password)
-    login_and_render(conn, user)
+    Util.repo.transaction fn ->
+      {:ok, user} = Authenticator.authenticate_by_account(account, password)
+      @user_behaviour.signed_in(conn, user)
+    end
   end
 
   @doc """
@@ -93,9 +93,11 @@ defmodule PhoenixGuardianAuth.UserController do
     jwt = Guardian.Plug.current_token(conn)
     {:ok, claims} = Guardian.Plug.claims(conn)
 
-    Guardian.revoke!(jwt, claims)
-
-    render_message(conn, "logout successfull")
+    Util.repo.transaction fn ->
+      user = current_user(conn)
+      Guardian.revoke!(jwt, claims)
+      @user_behaviour.signed_out(user)
+    end
   end
 
   @doc """
@@ -113,12 +115,10 @@ defmodule PhoenixGuardianAuth.UserController do
     user = UserHelper.find_by_email(email)
     {password_reset_token, changeset} = PasswordResetter.create_changeset(user)
 
-    case Util.repo.transaction fn ->
+    Util.repo.transaction fn ->
       user = Util.repo.update!(changeset)
       @activator.send_password_reset(user, password_reset_token, conn)
-    end do
-      {:ok, _} ->
-        render_message(conn, "please check your email")
+      @user_behaviour.requested_reset(user)
     end
   end
 
@@ -126,12 +126,10 @@ defmodule PhoenixGuardianAuth.UserController do
     user = UserHelper.find_by_account(account)
     {password_reset_token, changeset} = PasswordResetter.create_changeset(user)
 
-    case Util.repo.transaction fn ->
+    Util.repo.transaction fn ->
       user = Util.repo.update!(changeset)
       @activator.send_password_reset(user, password_reset_token, conn)
-    end do
-      {:ok, _} ->
-        render_message(conn, "please check your email")
+      @user_behaviour.requested_reset(user)
     end
   end
 
@@ -148,10 +146,12 @@ defmodule PhoenixGuardianAuth.UserController do
     user = Util.repo.get(UserHelper.model, user_id)
     changeset = PasswordResetter.reset_changeset(user, params)
 
-    user = Util.repo.update!(changeset)
-    {:ok, sub} = Guardian.serializer.for_token(user)
-    Ecto.Query.from(t in Token, where: t.sub == ^sub and t.typ == "token") |> GuardianDb.repo.delete_all
-    login_and_render(conn, user)
+    Util.repo.transaction fn ->
+      user = Util.repo.update!(changeset)
+      {:ok, sub} = Guardian.serializer.for_token(user)
+      Ecto.Query.from(t in Token, where: t.sub == ^sub and t.typ == "token") |> GuardianDb.repo.delete_all
+      @user_behaviour.confirmed_reset(user)
+    end
   end
 
   def confirm_reset_with_get(conn, params = %{"id" => _user_id, "password_reset_token" => _}) do
@@ -170,13 +170,12 @@ defmodule PhoenixGuardianAuth.UserController do
     |> current_user_model
     |> AccountUpdater.changeset(params)
 
-    case Util.repo.transaction fn ->
+    Util.repo.transaction fn ->
       user = Util.repo.update!(changeset)
       if (confirmation_token != nil) do
         @activator.send_new_account(user, confirmation_token, conn)
       end
-    end do
-      {:ok, _} -> render_message(conn, "user has been updated")
+      @user_behaviour.updated(user)
     end
   end
 
