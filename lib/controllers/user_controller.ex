@@ -167,7 +167,7 @@ defmodule PhoenixGuardianAuth.UserController do
   """
   def update(conn, %{"data" => %{"attributes" => params}}) do
     {confirmation_token, changeset} = conn
-    |> current_user
+    |> current_user_model
     |> AccountUpdater.changeset(params)
 
     case Util.repo.transaction fn ->
@@ -180,7 +180,7 @@ defmodule PhoenixGuardianAuth.UserController do
     end
   end
 
-  defp current_user(conn) do
+  defp current_user_model(conn) do
     Util.repo.get(UserHelper.model, Guardian.Plug.current_resource(conn).id)
   end
 
