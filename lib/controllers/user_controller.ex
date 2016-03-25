@@ -31,11 +31,13 @@ defmodule PhoenixGuardianAuth.UserController do
     {confirmation_token, changeset} = Registrator.changeset(params)
     |> Confirmator.confirmation_needed_changeset
 
-    Util.repo.transaction fn ->
+    result = Util.repo.transaction fn ->
       user = Util.repo.insert!(changeset)
       @activator.send_welcome(user, confirmation_token, conn)
       @user_behaviour.created(conn, user)
     end
+
+    do_transaction(result)
   end
 
   @doc """
@@ -53,10 +55,12 @@ defmodule PhoenixGuardianAuth.UserController do
     user = Util.repo.get! UserHelper.model, user_id
     changeset = Confirmator.confirmation_changeset user, params
 
-    Util.repo.transaction fn ->
+    result = Util.repo.transaction fn ->
       user = Util.repo.update!(changeset)
       @user_behaviour.confirmed(conn, user)
     end
+
+    do_transaction(result)
   end
 
   def confirm_with_get(conn, params = %{"id" => _user_id, "confirmation_token" => _}) do
@@ -72,17 +76,21 @@ defmodule PhoenixGuardianAuth.UserController do
   Responds with status 401 and {errors: error_message} otherwise.
   """
   def login(conn, %{"data" => %{"attributes" => %{"email" => email, "password" => password}}}) do
-    Util.repo.transaction fn ->
+    result = Util.repo.transaction fn ->
       {:ok, user} = Authenticator.authenticate_by_email(email, password)
       @user_behaviour.signed_in(conn, user)
     end
+
+    do_transaction(result)
   end
 
   def login(conn, %{"data" => %{"attributes" => %{"account" => account, "password" => password}}}) do
-    Util.repo.transaction fn ->
+    result = Util.repo.transaction fn ->
       {:ok, user} = Authenticator.authenticate_by_account(account, password)
       @user_behaviour.signed_in(conn, user)
     end
+
+    do_transaction(result)
   end
 
   @doc """
@@ -95,11 +103,13 @@ defmodule PhoenixGuardianAuth.UserController do
     jwt = Guardian.Plug.current_token(conn)
     {:ok, claims} = Guardian.Plug.claims(conn)
 
-    Util.repo.transaction fn ->
+    result = Util.repo.transaction fn ->
       user = current_user(conn)
       Guardian.revoke!(jwt, claims)
       @user_behaviour.signed_out(conn, user)
     end
+
+    do_transaction(result)
   end
 
   @doc """
@@ -117,22 +127,26 @@ defmodule PhoenixGuardianAuth.UserController do
     user = UserHelper.find_by_email(email)
     {password_reset_token, changeset} = PasswordResetter.create_changeset(user)
 
-    Util.repo.transaction fn ->
+    result = Util.repo.transaction fn ->
       user = Util.repo.update!(changeset)
       @activator.send_password_reset(user, password_reset_token, conn)
       @user_behaviour.requested_reset(conn, user)
     end
+
+    do_transaction(result)
   end
 
   def request_reset(conn, %{"data" => %{"attributes" => %{"account" => account}}}) do
     user = UserHelper.find_by_account(account)
     {password_reset_token, changeset} = PasswordResetter.create_changeset(user)
 
-    Util.repo.transaction fn ->
+    result = Util.repo.transaction fn ->
       user = Util.repo.update!(changeset)
       @activator.send_password_reset(user, password_reset_token, conn)
       @user_behaviour.requested_reset(conn, user)
     end
+
+    do_transaction(result)
   end
 
   @doc """
