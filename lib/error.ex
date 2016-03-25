@@ -36,6 +36,12 @@ defimpl PhoenixGuardianAuth.ErrorConvertible, for: PhoenixGuardianAuth.AuthExcep
   end
 end
 
+defimpl PhoenixGuardianAuth.ErrorConvertible, for: PhoenixGuardianAuth.NotApplicableException  do
+  def to_error(%PhoenixGuardianAuth.NotApplicableException{message: message}) do
+    %PhoenixGuardianAuth.Error{message: message, errors: []}
+  end
+end
+
 defimpl PhoenixGuardianAuth.ErrorConvertible, for: PhoenixGuardianAuth.Error do
   def to_error(%PhoenixGuardianAuth.Error{} = error), do: error
 end
