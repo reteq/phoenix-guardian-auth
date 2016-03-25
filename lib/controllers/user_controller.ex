@@ -32,7 +32,7 @@ defmodule PhoenixGuardianAuth.UserController do
     Util.repo.transaction fn ->
       user = Util.repo.insert!(changeset)
       @activator.send_welcome(user, confirmation_token, conn)
-      @user_behaviour.created(user)
+      @user_behaviour.created(conn, user)
     end
   end
 
@@ -53,7 +53,7 @@ defmodule PhoenixGuardianAuth.UserController do
 
     Util.repo.transaction fn ->
       user = Util.repo.update!(changeset)
-      @user_behaviour.confirmed(user)
+      @user_behaviour.confirmed(conn, user)
     end
   end
 
@@ -72,7 +72,7 @@ defmodule PhoenixGuardianAuth.UserController do
   def login(conn, %{"data" => %{"attributes" => %{"email" => email, "password" => password}}}) do
     Util.repo.transaction fn ->
       {:ok, user} = Authenticator.authenticate_by_email(email, password)
-      @user_behaviour.signed_in(user)
+      @user_behaviour.signed_in(conn, user)
     end
   end
 
@@ -96,7 +96,7 @@ defmodule PhoenixGuardianAuth.UserController do
     Util.repo.transaction fn ->
       user = current_user(conn)
       Guardian.revoke!(jwt, claims)
-      @user_behaviour.signed_out(user)
+      @user_behaviour.signed_out(conn, user)
     end
   end
 
@@ -118,7 +118,7 @@ defmodule PhoenixGuardianAuth.UserController do
     Util.repo.transaction fn ->
       user = Util.repo.update!(changeset)
       @activator.send_password_reset(user, password_reset_token, conn)
-      @user_behaviour.requested_reset(user)
+      @user_behaviour.requested_reset(conn, user)
     end
   end
 
@@ -129,7 +129,7 @@ defmodule PhoenixGuardianAuth.UserController do
     Util.repo.transaction fn ->
       user = Util.repo.update!(changeset)
       @activator.send_password_reset(user, password_reset_token, conn)
-      @user_behaviour.requested_reset(user)
+      @user_behaviour.requested_reset(conn, user)
     end
   end
 
@@ -150,7 +150,7 @@ defmodule PhoenixGuardianAuth.UserController do
       user = Util.repo.update!(changeset)
       {:ok, sub} = Guardian.serializer.for_token(user)
       Ecto.Query.from(t in Token, where: t.sub == ^sub and t.typ == "token") |> GuardianDb.repo.delete_all
-      @user_behaviour.confirmed_reset(user)
+      @user_behaviour.confirmed_reset(conn, user)
     end
   end
 
@@ -175,7 +175,7 @@ defmodule PhoenixGuardianAuth.UserController do
       if (confirmation_token != nil) do
         @activator.send_new_account(user, confirmation_token, conn)
       end
-      @user_behaviour.updated(user)
+      @user_behaviour.updated(conn, user)
     end
   end
 
