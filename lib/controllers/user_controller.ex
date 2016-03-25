@@ -4,11 +4,11 @@ defmodule PhoenixGuardianAuth.UserController do
   require Ecto.Query
   import PhoenixGuardianAuth.Controller
 
-  alias PhoenixTokenAuth.{Mailer, Util, UserHelper, AccountUpdater, Registrator, Confirmator, Authenticator, PasswordResetter, DefaultUserBehaviour}
+  alias PhoenixTokenAuth.{Mailer, Util, UserHelper, AccountUpdater, Registrator, Confirmator, Authenticator, PasswordResetter}
   alias GuardianDb.Token
 
   @activator Application.get_env(:phoenix_guardian_auth, :activator, Mailer)
-  @user_behaviour Application.get_env(:phoenix_guardian_auth, :user_behaviour, DefaultUserBehaviour)
+  @user_behaviour Application.get_env(:phoenix_guardian_auth, :user_behaviour, PhoenixGuardianAuth.DefaultUserBehaviour)
 
   def unauthenticated(_conn, _params) do
     raise Necta.AuthException, message: "Not Authenticated"
@@ -179,7 +179,7 @@ defmodule PhoenixGuardianAuth.UserController do
       end
       @user_behaviour.updated(conn, user)
     end
-    
+
     conned
   end
 
