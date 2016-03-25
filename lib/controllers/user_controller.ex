@@ -14,6 +14,8 @@ defmodule PhoenixGuardianAuth.UserController do
     raise Necta.AuthException, message: "Not Authenticated"
   end
 
+  defp do_transaction({:ok, conn}), do: conn
+
   @doc """
   Sign up as a new user.
 
@@ -146,14 +148,14 @@ defmodule PhoenixGuardianAuth.UserController do
     user = Util.repo.get(UserHelper.model, user_id)
     changeset = PasswordResetter.reset_changeset(user, params)
 
-    {:ok, conned} = Util.repo.transaction fn ->
+    result = Util.repo.transaction fn ->
       user = Util.repo.update!(changeset)
       {:ok, sub} = Guardian.serializer.for_token(user)
       Ecto.Query.from(t in Token, where: t.sub == ^sub and t.typ == "token") |> GuardianDb.repo.delete_all
       @user_behaviour.confirmed_reset(conn, user)
     end
 
-    conned
+    do_transaction(result)
   end
 
   def confirm_reset_with_get(conn, params = %{"id" => _user_id, "password_reset_token" => _}) do
@@ -172,7 +174,7 @@ defmodule PhoenixGuardianAuth.UserController do
     |> current_user_model
     |> AccountUpdater.changeset(params)
 
-    {:ok, conned} = Util.repo.transaction fn ->
+    result = Util.repo.transaction fn ->
       user = Util.repo.update!(changeset)
       if (confirmation_token != nil) do
         @activator.send_new_account(user, confirmation_token, conn)
@@ -180,7 +182,7 @@ defmodule PhoenixGuardianAuth.UserController do
       @user_behaviour.updated(conn, user)
     end
 
-    conned
+    do_transaction(result)
   end
 
   defp current_user_model(conn) do
