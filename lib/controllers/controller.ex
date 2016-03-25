@@ -19,4 +19,5 @@ defmodule PhoenixGuardianAuth.Controller do
     Phoenix.Controller.render(conn, PhoenixGuardianAuth.MessageView, "show.json", model: %{message: message})
   end
 
+  def current_user(conn), do: Guardian.Plug.current_resource(conn)
 end
