@@ -1,4 +1,4 @@
-defmodule Necta.NotApplicableException do
+defmodule PhoenixGuardianAuth.NotApplicableException do
   defexception [:message, :plug_status]
 
   def exception(opts) do
