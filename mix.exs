@@ -47,7 +47,7 @@ defmodule PhoenixGuardianAuth.Mixfile do
      {:mailgun, "~> 0.1.1"},
      {:sms, github: "reteq/sms-elixir"},
      {:scrivener, "~> 1.0.0"},
-     {:ja_serializer, "~> 0.6.0"},
+     {:ja_serializer, "~> 0.8.1"},
      {:mock, "~> 0.1.0", only: :test},
      {:ex_machina, "~> 0.6.1", only: :test},
      {:secure_random, "~> 0.2"},
