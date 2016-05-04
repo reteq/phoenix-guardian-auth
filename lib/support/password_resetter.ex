@@ -2,6 +2,8 @@ defmodule PhoenixTokenAuth.PasswordResetter do
   alias Ecto.Changeset
   alias PhoenixTokenAuth.{Util, Registrator, UserHelper}
 
+  @activator Application.get_env(:phoenix_guardian_auth, :activator, PhoenixTokenAuth.Mailer)
+
   @doc """
   Adds the changes needed to create a password reset token.
 
@@ -42,7 +44,7 @@ defmodule PhoenixTokenAuth.PasswordResetter do
   # Generates a random token.
   # Returns {token, hashed_token}.
   defp generate_token do
-    token = SecureRandom.urlsafe_base64(64)
+    token = @activator.generate_token
     {token, Util.crypto_provider.hashpwsalt(token)}
   end
 
