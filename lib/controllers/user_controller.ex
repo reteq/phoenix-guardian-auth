@@ -53,7 +53,16 @@ defmodule PhoenixGuardianAuth.UserController do
   """
   def confirm(conn, %{"data" => %{"attributes" => params = %{"id" => user_id, "confirmation_token" => _}}}) do
     user = Util.repo.get! UserHelper.model, user_id
-    changeset = Confirmator.confirmation_changeset user, params
+    confirm(conn, user, params)
+  end
+
+  def confirm(conn, %{"data" => %{"attributes" => params = %{"account" => account, "confirmation_token" => _}}}) do
+    user = Util.repo.one! UserHelper.model, account: account
+    confirm(conn, user, params)
+  end
+
+  def confirm(conn, user, confirmation_token) do
+    changeset = Confirmator.confirmation_changeset user, %{"confirmation_token" => confirmation_token}
 
     result = Util.repo.transaction fn ->
       user = Util.repo.update!(changeset)
