@@ -32,6 +32,6 @@
   "ranch": {:hex, :ranch, "1.2.1"},
   "scrivener": {:hex, :scrivener, "1.0.0"},
   "secure_random": {:hex, :secure_random, "0.2.0"},
-  "sms": {:git, "https://github.com/reteq/sms-elixir.git", "07d59855b58133935338ea19b43bf4dc7004bdec", []},
+  "sms": {:git, "https://github.com/reteq/sms-elixir.git", "a1e095e7ee49e811553e6dfacd76a708fa9521ad", []},
   "ssl_verify_hostname": {:hex, :ssl_verify_hostname, "1.0.5"},
   "uuid": {:hex, :uuid, "1.1.3"}}
