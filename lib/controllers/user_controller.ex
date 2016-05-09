@@ -167,8 +167,17 @@ defmodule PhoenixGuardianAuth.UserController do
   Responds with status 200 and body {token: token} if successfull. Use this token in subsequent requests as authentication.
   Responds with status 422 and body {errors: [messages]} otherwise.
   """
+  def confirm_reset(conn, %{"data" => %{"attributes" => params = %{"account" => account}}}) do
+    user = Util.repo.get_by!(UserHelper.model, account: account)
+    confirm_reset(conn, user, params)
+  end
+
   def confirm_reset(conn, %{"data" => %{"attributes" => params = %{"id" => user_id}}}) do
     user = Util.repo.get(UserHelper.model, user_id)
+    confirm_reset(conn, user, params)
+  end
+
+  defp confirm_reset(conn, user, params) do
     changeset = PasswordResetter.reset_changeset(user, params)
 
     result = Util.repo.transaction fn ->

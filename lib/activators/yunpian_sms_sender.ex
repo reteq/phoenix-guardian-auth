@@ -18,5 +18,5 @@ defmodule PhoenixGuardianAuth.YunpianSMSender do
     Sms.send(user.unconfirmed_account, body, [tpl_id: id])
   end
 
-  def generate_token, do: :crypto.rand_uniform(1000, 9999) |> Integer.to_string
+  def generate_token, do: :crypto.rand_uniform(100000, 999999) |> Integer.to_string
 end
