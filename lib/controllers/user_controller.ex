@@ -57,7 +57,7 @@ defmodule PhoenixGuardianAuth.UserController do
   end
 
   def confirm(conn, %{"data" => %{"attributes" => _params = %{"account" => account, "confirmation_token" => token}}}) do
-    user = Util.repo.one! UserHelper.model, account: account
+    user = Util.repo.get_by!(UserHelper.model, account: account)
     confirm(conn, user, token)
   end
 
