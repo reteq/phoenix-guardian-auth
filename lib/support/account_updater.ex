@@ -7,13 +7,13 @@ defmodule PhoenixTokenAuth.AccountUpdater do
   Validates that email and password are present and that email is unique.
   """
   def changeset(user, params) do
-    Changeset.cast(user, params, ~w(), [])
+    Changeset.cast(user, params, [])
     |> UserHelper.validator
-    |> apply_password_change
-    |> apply_account_change
+    |> apply_password_change(params)
+    |> apply_account_change(params)
   end
 
-  def apply_email_change(changeset = %{params: %{"email" => email}, model: %{email: email_before}})
+  def apply_email_change(changeset = %{params: %{"email" => email}, data: %{email: email_before}})
     when email != "" and email != nil and email != email_before do
     changeset
     |> Changeset.put_change(:unconfirmed_email, email)
@@ -21,19 +21,19 @@ defmodule PhoenixTokenAuth.AccountUpdater do
   end
   def apply_email_change(changeset), do: {nil, changeset}
 
-  def apply_account_change(changeset = %{params: %{"account" => account}, model: %{account: account_before}})
+  def apply_account_change(changeset = %{data: %{account: account_before}}, %{"account" => account})
     when account != "" and account != nil and account != account_before do
     changeset
     |> Changeset.put_change(:unconfirmed_account, account)
     |> Confirmator.confirmation_needed_changeset
   end
 
-  def apply_account_change(changeset), do: {nil, changeset}
+  def apply_account_change(changeset, _), do: {nil, changeset}
 
-  def apply_password_change(changeset = %{params: %{"password" => password}}) when password != "" and password != nil do
+  def apply_password_change(changeset, %{"password" => password}) when password != "" and password != nil do
     hashed_password = Util.crypto_provider.hashpwsalt(password)
     changeset
     |> Changeset.put_change(:hashed_password, hashed_password)
   end
-  def apply_password_change(changeset), do: changeset
+  def apply_password_change(changeset, _), do: changeset
 end
