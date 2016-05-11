@@ -17,9 +17,16 @@ end
 defimpl PhoenixGuardianAuth.ErrorConvertible, for: Ecto.Changeset do
   def to_error(%Ecto.Changeset{
     errors: errors,
-    model: %{__meta__: %{source: {_, resource}}}
+    data: %{__meta__: %{source: {_, _resource}}}
     }) do
-    errors = errors |> Enum.map(fn {k, v} -> %{resource: resource, field: k, code: v} end)
+    errors = errors |> Enum.map(fn {field, message} ->
+      %{
+        source: %{
+          pointer: "data/attributes/#{field}"
+        },
+        detail: "#{field} #{elem(message, 0)}"
+      }
+    end)
     %PhoenixGuardianAuth.Error{message: "Validation failed", errors: errors}
   end
 end

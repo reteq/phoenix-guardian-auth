@@ -36,13 +36,14 @@ defmodule PhoenixGuardianAuth.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [{:phoenix, "~> 1.1"},
-     {:phoenix_ecto, "~> 2.0"},
-     {:ecto, "~> 1.1"},
+     # {:phoenix_ecto, "~> 2.0"},
+     {:phoenix_ecto, "~> 3.0.0-rc"},
+     {:ecto, "~> 2.0.0-rc.4", override: true},
      {:postgrex, ">= 0.0.0"},
      {:cowboy, "~> 1.0"},
      {:gettext, "~> 0.9"},
-     {:guardian, "~> 0.9.0"},
-     {:guardian_db, "~> 0.4.0"},
+     {:guardian, "~> 0.11.1"},
+     {:guardian_db, "~> 0.5.0"},
      {:poison, "~> 1.5", override: true},
      {:mailgun, "~> 0.1.1"},
      {:sms, github: "reteq/sms-elixir"},

@@ -66,18 +66,18 @@ defmodule PhoenixGuardianAuth.ConnCase do
   end
 
   defp data_on_body(body) do
-    Poison.decode!(body)["data"]
+    Poison.decode!(body)
   end
 
   def errors_on_body(body) do
-    errors_on(data_on_body(body))
+    body |> data_on_body |> errors_on
   end
 
   def errors_on(data) do
-    data["attributes"]["errors"] |> Enum.map(&(&1["field"]))
+    data["errors"] |> Enum.map(&(&1["source"]["pointer"] |> String.replace_prefix("data/attributes/", "")))
   end
 
   def error_message(body) do
-    data_on_body(body)["attributes"]["message"]
+    data_on_body(body)["message"]
   end
 end

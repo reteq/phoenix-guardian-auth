@@ -1,7 +1,3 @@
 defmodule PhoenixGuardianAuth.ErrorMessageView do
-
-  use JaSerializer.PhoenixView
-
-  attributes [:message, :errors]
-
+  def format(error = %PhoenixGuardianAuth.Error{}), do: error
 end

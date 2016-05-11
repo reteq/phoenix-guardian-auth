@@ -56,7 +56,7 @@ defmodule PhoenixTokenAuth.Confirmator do
 
   defp validate_token(changeset) do
     token_matches = Util.crypto_provider.checkpw(changeset.params["confirmation_token"],
-                                            changeset.model.hashed_confirmation_token)
+                                            changeset.data.hashed_confirmation_token)
     do_validate_token token_matches, changeset
   end
 
