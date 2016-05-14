@@ -27,18 +27,25 @@ defmodule PhoenixGuardianAuth.UserController do
   Responds with status 200 and body "ok" if successfull.
   Responds with status 422 and body {errors: {field: "message"}} otherwise.
   """
-  def create(conn, %{"data" => %{"attributes" => params = %{"account" => account}}}) do
+  def create(conn, %{"data" => %{"attributes" => params}}) do
     result = Util.repo.transaction fn ->
-      user = case Util.repo.get_by(UserHelper.model, account: account) do
-        u = %{confirmed_at: nil} ->
-          {confirmation_token, changeset} = Registrator.changeset(u, params)
-          |> Confirmator.confirmation_needed_changeset
-          Util.repo.update!(changeset)
+      user = case params do
+        %{"account" => account} ->
+        case Util.repo.get_by(UserHelper.model, account: account) do
+          u = %{confirmed_at: nil} ->
+            {confirmation_token, changeset} = Registrator.changeset(u, params)
+            |> Confirmator.confirmation_needed_changeset
+            Util.repo.update!(changeset)
+          _ ->
+            {confirmation_token, changeset} = Registrator.changeset(params)
+            |> Confirmator.confirmation_needed_changeset
+            Util.repo.insert!(changeset)
+          end
         _ ->
-          {confirmation_token, changeset} = Registrator.changeset(params)
-          |> Confirmator.confirmation_needed_changeset
-          Util.repo.insert!(changeset)
-        end
+            {confirmation_token, changeset} = Registrator.changeset(params)
+            |> Confirmator.confirmation_needed_changeset
+            Util.repo.insert!(changeset)
+      end
 
       @activator.send_welcome(user, confirmation_token, conn)
       @user_behaviour.created(conn, user)
