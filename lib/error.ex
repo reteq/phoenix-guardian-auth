@@ -8,7 +8,7 @@ defmodule PhoenixGuardianAuth.Error do
 end
 
 defprotocol PhoenixGuardianAuth.ErrorConvertible do
-  @fallback_to_any !Application.get_env(:necta, :raise_system_error, true)
+  @fallback_to_any !Application.get_env(:phoenix_guardian_auth, :raise_system_error, true)
 
   @spec to_error(t) :: PhoenixGuardianAuth.Error.t
   def to_error(error_convertible)
